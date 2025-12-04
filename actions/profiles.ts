@@ -29,7 +29,13 @@ export type SaveProfileParams = {
   recaptchaToken?: string;
 };
 
-export async function saveProfile(params: SaveProfileParams) {
+export type SaveProfileResult =
+  | { success: true; data: typeof profiles.$inferSelect }
+  | { success: false; error: string };
+
+export async function saveProfile(
+  params: SaveProfileParams
+): Promise<SaveProfileResult> {
   const {
     walletAddress,
     username,
@@ -39,45 +45,56 @@ export async function saveProfile(params: SaveProfileParams) {
     recaptchaToken,
   } = params;
 
-  // Verify reCAPTCHA if token is provided
-  if (recaptchaToken) {
-    const isHuman = await verifyRecaptcha(recaptchaToken);
-    if (!isHuman) {
-      throw new Error("reCAPTCHA verification failed. Please try again.");
+  try {
+    // Verify reCAPTCHA if token is provided
+    if (recaptchaToken) {
+      const isHuman = await verifyRecaptcha(recaptchaToken);
+      if (!isHuman) {
+        return {
+          success: false,
+          error: "reCAPTCHA verification failed. Please try again.",
+        };
+      }
     }
-  }
 
-  // Check if profile exists
-  const existing = await getProfile({ walletAddress });
+    // Check if profile exists
+    const existing = await getProfile({ walletAddress });
 
-  if (existing) {
-    // Update existing profile
-    const [updated] = await db
-      .update(profiles)
-      .set({
-        username,
-        bio,
-        email,
-        marketingOptIn: marketingOptIn ?? false,
-        updatedAt: new Date(),
-      })
-      .where(eq(profiles.walletAddress, walletAddress))
-      .returning();
+    if (existing) {
+      // Update existing profile
+      const [updated] = await db
+        .update(profiles)
+        .set({
+          username,
+          bio,
+          email,
+          marketingOptIn: marketingOptIn ?? false,
+          updatedAt: new Date(),
+        })
+        .where(eq(profiles.walletAddress, walletAddress))
+        .returning();
 
-    return updated;
-  } else {
-    // Create new profile
-    const [created] = await db
-      .insert(profiles)
-      .values({
-        walletAddress,
-        username,
-        bio,
-        email,
-        marketingOptIn: marketingOptIn ?? false,
-      })
-      .returning();
+      return { success: true, data: updated };
+    } else {
+      // Create new profile
+      const [created] = await db
+        .insert(profiles)
+        .values({
+          walletAddress,
+          username,
+          bio,
+          email,
+          marketingOptIn: marketingOptIn ?? false,
+        })
+        .returning();
 
-    return created;
+      return { success: true, data: created };
+    }
+  } catch (error: any) {
+    console.error("Error saving profile:", error);
+    return {
+      success: false,
+      error: error.message || "Failed to save profile",
+    };
   }
 }

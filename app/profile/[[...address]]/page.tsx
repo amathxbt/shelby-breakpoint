@@ -60,8 +60,8 @@ export default function ProfilePage() {
       setIsEditDialogOpen(false);
       toast.success("Profile updated successfully");
     },
-    onError: () => {
-      toast.error("Failed to update profile");
+    onError: (error) => {
+      toast.error("Failed to update profile: " + error.message);
     },
   });
 
@@ -75,9 +75,9 @@ export default function ProfilePage() {
       try {
         recaptchaToken = await executeRecaptcha("save_profile");
       } catch (error) {
-        console.error("reCAPTCHA error:", error);
-        toast.error("Failed to verify you're not a bot. Please try again.");
-        return;
+        console.error("reCAPTCHA execution failed:", error);
+        // Soft fail: proceed without token if reCAPTCHA fails to execute (common in webviews)
+        toast.warning("reCAPTCHA skipped due to browser limitations");
       }
     }
 
