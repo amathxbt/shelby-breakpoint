@@ -4,30 +4,17 @@ import { useWallet, truncateAddress } from "@aptos-labs/wallet-adapter-react";
 import { useRouter, useParams } from "next/navigation";
 import { Upload, Copy, Check, Pencil, Video, LogOut } from "lucide-react";
 import { VideoThumbnail } from "@/components/video-thumbnail";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { formatDistanceToNow } from "@/lib/time";
 import { toast } from "sonner";
 import useProfile from "@/queries/useProfile";
 import useVideos from "@/queries/useVideos";
-import useSaveProfile from "@/mutations/useSaveProfile";
 import useSignOut from "@/mutations/useSignOut";
 import Link from "next/link";
-import { useRecaptcha } from "@/providers/RecaptchaProvider";
 import Loader from "@/components/ui/loader";
 import GeometricAvatar from "@/components/geometric-avatar";
+import { SettingsDialog } from "@/components/settings-dialog";
 
 export default function ProfilePage() {
   const { account, connected } = useWallet();
@@ -35,12 +22,6 @@ export default function ProfilePage() {
   const params = useParams<{ address?: string[] }>();
   const [copied, setCopied] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editUsername, setEditUsername] = useState("");
-  const [editBio, setEditBio] = useState("");
-  const [editEmail, setEditEmail] = useState("");
-  const [editMarketingOptIn, setEditMarketingOptIn] = useState(false);
-  const [editXHandle, setEditXHandle] = useState("");
-  const { executeRecaptcha } = useRecaptcha();
   const { mutate: signOut } = useSignOut();
 
   // Get address from path params, or use connected wallet address
@@ -57,61 +38,6 @@ export default function ProfilePage() {
   const { data: profile, isLoading: isProfileLoading } = useProfile({
     walletAddress: profileAddress,
   });
-
-  // Save profile mutation (only for own profile)
-  const { mutate: saveProfile, isPending: isSavingProfile } = useSaveProfile({
-    onSuccess: () => {
-      setIsEditDialogOpen(false);
-      toast.success("Profile updated successfully");
-    },
-    onError: () => {
-      toast.error("Failed to update profile");
-    },
-  });
-
-  const handleSaveProfile = useCallback(async () => {
-    if (!connectedAddress) return;
-
-    let recaptchaToken: string | undefined;
-
-    // Get reCAPTCHA token if available
-    if (executeRecaptcha) {
-      try {
-        recaptchaToken = await executeRecaptcha("save_profile");
-      } catch (error) {
-        console.error("reCAPTCHA error:", error);
-        toast.error("Failed to verify you're not a bot. Please try again.");
-        return;
-      }
-    }
-
-    saveProfile({
-      username: editUsername || null,
-      bio: editBio || null,
-      email: editEmail || null,
-      x_handle: editXHandle || null,
-      marketingOptIn: editMarketingOptIn,
-      recaptchaToken,
-    });
-  }, [
-    connectedAddress,
-    editUsername,
-    editBio,
-    editEmail,
-    editMarketingOptIn,
-    editXHandle,
-    executeRecaptcha,
-    saveProfile,
-  ]);
-
-  const openEditDialog = () => {
-    setEditUsername(profile?.username || "");
-    setEditBio(profile?.bio || "");
-    setEditEmail(profile?.email || "");
-    setEditXHandle(profile?.x_handle || "");
-    setEditMarketingOptIn(profile?.marketingOptIn ?? false);
-    setIsEditDialogOpen(true);
-  };
 
   const copyAddress = async () => {
     if (!profileAddress) return;
@@ -171,7 +97,7 @@ export default function ProfilePage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={openEditDialog}
+                    onClick={() => setIsEditDialogOpen(true)}
                     className="h-8 w-8 p-0"
                   >
                     <Pencil className="w-4 h-4" />
@@ -298,146 +224,7 @@ export default function ProfilePage() {
         )}
       </div>
 
-      {/* Edit Profile Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle>Edit Profile</DialogTitle>
-            <DialogDescription>
-              Update your profile information.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4 overflow-y-auto flex-1">
-            <p className="text-sm text-muted-foreground">
-              Username and Bio will be visible to others.
-            </p>
-            <div className="grid gap-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                placeholder="Enter a username"
-                value={editUsername}
-                onChange={(e) => setEditUsername(e.target.value)}
-                maxLength={30}
-              />
-              <p className="text-xs text-muted-foreground">
-                Leave empty to show your wallet address
-              </p>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea
-                id="bio"
-                placeholder="Tell us about yourself..."
-                value={editBio}
-                onChange={(e) => setEditBio(e.target.value)}
-                maxLength={200}
-                rows={3}
-              />
-              <p className="text-xs text-muted-foreground">
-                {editBio.length}/200 characters
-              </p>
-            </div>
-            <p className="text-md text-muted-foreground">
-              Communication methods
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Update your communication methods to join the Shelby Breakpoint
-              contest. Will be used to contact you if you win.
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Will not be shared with anyone else.
-            </p>
-            <div className="text-sm text-muted-foreground">
-              <p>How the contest works:</p>
-              <ul className="list-disc pl-5">
-                <li>
-                  Watch and like up to{" "}
-                  <span className="font-bold">five videos</span> in the app
-                </li>
-                <li>Must live in an eligible country for shipping</li>
-                <li>
-                  <a
-                    href="https://shelby.xyz/contest-rules.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    See terms of the contest and eligibility requirements
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              <p>What you can win:</p>
-              <ul className="list-disc pl-5">
-                <li>
-                  Exclusive Shelby Merch Bundle: sweatshirt, t-shirt, mug, tote
-                  bag, notebook, stickers
-                </li>
-                <li>Professional Creator Kit: Mics, camera, and other gear</li>
-              </ul>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="x_handle">X (Twitter) handle</Label>
-              <Input
-                id="x_handle"
-                type="text"
-                placeholder="Your X (Twitter) handle"
-                value={editXHandle}
-                onChange={(e) => setEditXHandle(e.target.value)}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={editEmail}
-                onChange={(e) => {
-                  const newEmail = e.target.value;
-                  setEditEmail(newEmail);
-                  // Auto-check marketing opt-in when user starts typing email
-                  if (newEmail && !editMarketingOptIn) {
-                    setEditMarketingOptIn(true);
-                  }
-                }}
-              />
-              <p className="text-xs text-muted-foreground">
-                Used for notifications and updates.
-              </p>
-            </div>
-            <div className="flex items-start space-x-3 pt-2">
-              <Checkbox
-                id="marketing"
-                checked={editMarketingOptIn}
-                onCheckedChange={(checked) =>
-                  setEditMarketingOptIn(checked === true)
-                }
-              />
-              <div className="grid gap-1.5 leading-none">
-                <Label
-                  htmlFor="marketing"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                >
-                  Receive marketing emails
-                </Label>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsEditDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleSaveProfile} disabled={isSavingProfile}>
-              {isSavingProfile ? "Saving..." : "Save changes"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <SettingsDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />
     </div>
   );
 }

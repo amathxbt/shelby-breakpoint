@@ -1,11 +1,13 @@
 "use client";
 
-import { Home, Plus, User } from "lucide-react";
+import { Home, Plus, User, Settings } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { cn } from "@/lib/utils";
 import { useWalletDialog } from "@/providers/WalletDialogProvider";
 import { Icons } from "./ui/icons";
+import { SettingsDialog } from "./settings-dialog";
+import { useState } from "react";
 
 interface NavItem {
   icon: React.ElementType;
@@ -26,6 +28,7 @@ export function Navigation() {
   const pathname = usePathname();
   const { connected } = useWallet();
   const { openWalletDialog } = useWalletDialog();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const navigateTo = (href: string) => {
     router.push(href);
@@ -100,6 +103,32 @@ export function Navigation() {
             );
           })}
         </div>
+
+        {/* Settings Button */}
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          className={cn(
+            "flex flex-col items-center gap-1.5 transition-colors group w-full mb-2",
+            isSettingsOpen
+              ? "text-sidebar-foreground"
+              : "text-secondary-foreground hover:text-sidebar-foreground"
+          )}
+        >
+          <div
+            className={cn(
+              "flex items-center justify-center w-10 h-10 rounded-lg transition-colors",
+              isSettingsOpen
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "hover:bg-sidebar-accent/50"
+            )}
+          >
+            <Settings
+              className="w-5 h-5"
+              strokeWidth={isSettingsOpen ? 2.5 : 2}
+            />
+          </div>
+          <span className="text-[10px] font-medium">Settings</span>
+        </button>
       </nav>
 
       {/* Mobile Bottom Navigation */}
@@ -131,7 +160,24 @@ export function Navigation() {
             </button>
           );
         })}
+
+        {/* Mobile Settings Button */}
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          className={cn(
+            "flex flex-col items-center gap-0.5 transition-colors min-w-[64px] group",
+            isSettingsOpen ? "text-sidebar-foreground" : "text-muted-foreground"
+          )}
+        >
+          <Settings
+            className="w-6 h-6"
+            strokeWidth={isSettingsOpen ? 2.5 : 1.5}
+          />
+          <span className="text-[10px] font-medium">Settings</span>
+        </button>
       </nav>
+
+      <SettingsDialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
     </>
   );
 }

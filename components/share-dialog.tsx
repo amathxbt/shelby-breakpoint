@@ -29,7 +29,7 @@ export function ShareDialog({
   title = "Share Video",
   address,
 }: ShareDialogProps) {
-  const handleShare = async () => {
+  const handleShareOrCopy = async () => {
     try {
       if (navigator.share) {
         await navigator.share({
@@ -69,7 +69,6 @@ export function ShareDialog({
             <div className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-card p-2 rounded-full">
               <GeometricAvatar size={48} name={address} />
             </div>
-            <p className="text-sm text-muted-foreground text-center"></p>
           </div>
 
           <div className="flex w-full items-center gap-4 py-3">
@@ -80,13 +79,18 @@ export function ShareDialog({
             <div className="flex-1 bg-border h-px" />
           </div>
 
-          <div className="w-full space-y-2 flex flex-col items-center justify-center ">
+          <div className="w-full flex flex-col items-center justify-center">
             <div className="flex items-center gap-2 w-full">
               <Input value={url} readOnly className="flex-1" />
 
               <CopyButton text={url} />
 
-              <Button size="icon" variant="outline" onClick={handleShare}>
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={handleShareOrCopy}
+                aria-label="Share via system dialog"
+              >
                 <Share />
               </Button>
             </div>
