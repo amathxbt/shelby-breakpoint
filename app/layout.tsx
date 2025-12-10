@@ -20,8 +20,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Shelby Breakpoint",
-  description: "Shelby Breakpoint demo dapp",
+  title: "Shelby Social - Demo",
+  description: "Social media platform powered by the Shelby Network",
+  openGraph: {
+    title: "Shelby Social - Demo",
+    description: "Social media platform powered by the Shelby Network",
+    url: "https://social-demo.shelby.xyz",
+    type: "website",
+    siteName: "Shelby Social - Demo",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Shelby Social - Demo",
+    description: "Social media platform powered by the Shelby Network",
+    site: "@shelbyserves",
+    creator: "@shelbyserves",
+  },
+  metadataBase: new URL("https://social-demo.shelby.xyz"),
 };
 
 export default function RootLayout({
