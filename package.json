@@ -49,6 +49,7 @@
     "keyv": "npm:@keyvhq/core@~1.6.26",
     "lucide-react": "^0.554.0",
     "media-chrome": "^4.16.0",
+    "motion": "^12.23.25",
     "next": "16.0.7",
     "next-themes": "^0.4.6",
     "qrcode.react": "^4.2.0",

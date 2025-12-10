@@ -126,6 +126,7 @@ export function VideoActions({ video, isPlaying = false }: VideoActionsProps) {
 
       <ShareDialog
         open={isShareOpen}
+        address={video.account}
         onOpenChange={setIsShareOpen}
         url={shareUrl}
       />
