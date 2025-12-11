@@ -77,9 +77,7 @@ export function VideoPlayer({
       const abortController = new AbortController();
 
       fetch(video.url, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
+        headers: { Authorization: `Bearer ${authToken}` },
         signal: abortController.signal,
       })
         .then((response) => {

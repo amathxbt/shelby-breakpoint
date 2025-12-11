@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
-import HLS from "hls.js";
+import { useRef, useState } from "react";
 import { Play } from "lucide-react";
 
 interface VideoThumbnailProps {
@@ -16,45 +15,7 @@ export function VideoThumbnail({
   onClick,
 }: VideoThumbnailProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const hlsRef = useRef<HLS | null>(null);
   const [isHovering, setIsHovering] = useState(false);
-
-  const isHLS = src.endsWith(".m3u8");
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    // Cleanup previous HLS instance
-    if (hlsRef.current) {
-      hlsRef.current.destroy();
-      hlsRef.current = null;
-    }
-
-    if (isHLS && HLS.isSupported()) {
-      const hls = new HLS({
-        enableWorker: false,
-        maxBufferLength: 1,
-        maxMaxBufferLength: 2,
-      });
-      hlsRef.current = hls;
-      hls.loadSource(src);
-      hls.attachMedia(video);
-    } else if (isHLS && video.canPlayType("application/vnd.apple.mpegurl")) {
-      // Native HLS support (Safari)
-      video.src = src;
-    } else {
-      // Regular video file
-      video.src = src;
-    }
-
-    return () => {
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-    };
-  }, [src, isHLS]);
 
   const handleMouseEnter = () => {
     setIsHovering(true);
@@ -84,6 +45,7 @@ export function VideoThumbnail({
     >
       <video
         ref={videoRef}
+        src={src}
         className="w-full h-full object-cover"
         muted
         playsInline
