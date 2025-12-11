@@ -277,7 +277,7 @@ export default function ProfilePage() {
             {videos.map((video) => (
               <div
                 key={video.id}
-                className="relative aspect-9/16 bg-card rounded-lg overflow-hidden transition-transform hover:scale-[1.02] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="relative aspect-9/16 bg-card rounded-md overflow-hidden transition-transform hover:scale-[1.02] cursor-pointer"
               >
                 <Link href={`/?id=${video.fileId}`}>
                   <VideoThumbnail
@@ -359,7 +359,10 @@ export default function ProfilePage() {
               Will not be shared with anyone else.
             </p>
             <div className="text-sm text-muted-foreground">
-              <p>How to participate in the "Lights. Camera. Serve." Contest</p>
+              <p>
+                How to participate in the &quot;Lights. Camera. Serve.&quot;
+                Contest
+              </p>
               <ul className="list-disc pl-5">
                 <li>Watch and engage with videos in the app</li>
                 <li>Must live in an eligible country for shipping</li>

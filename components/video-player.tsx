@@ -9,6 +9,8 @@ import {
 } from "media-chrome/react";
 import { Video } from "@/db/schema";
 import { VideoActions } from "@/components/video-actions";
+import Loader from "./ui/loader";
+import useVideoBlob from "@/queries/useVideoBlob";
 
 // Default sample videos - always included
 export const defaultVideos: Video[] = [
@@ -44,14 +46,9 @@ export const defaultVideos: Video[] = [
 interface VideoPlayerProps {
   video: Video;
   isActive?: boolean;
-  authToken?: string;
 }
 
-export function VideoPlayer({
-  video,
-  isActive = true,
-  authToken,
-}: VideoPlayerProps) {
+export function VideoPlayer({ video, isActive = true }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const isActiveRef = useRef(isActive);
   const [isPlaying, setIsPlaying] = useState(isActive);
@@ -61,71 +58,36 @@ export function VideoPlayer({
     isActiveRef.current = isActive;
   }, [isActive]);
 
-  // Setup video source
+  const { data: blobData, isLoading } = useVideoBlob({ url: video?.url });
+
   useEffect(() => {
     const videoElement = videoRef.current;
-    if (!videoElement || !video) return;
+    if (!videoElement) return;
 
-    // Clean up previous blob URL
     if (blobUrlRef.current) {
       URL.revokeObjectURL(blobUrlRef.current);
       blobUrlRef.current = null;
     }
 
-    // If auth token is provided, fetch with authorization header and use blob URL
-    if (authToken) {
-      const abortController = new AbortController();
-
-      fetch(video.url, {
-        headers: { Authorization: `Bearer ${authToken}` },
-        signal: abortController.signal,
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`Failed to fetch video: ${response.status}`);
-          }
-          return response.blob();
-        })
-        .then((blob) => {
-          const blobUrl = URL.createObjectURL(blob);
-          blobUrlRef.current = blobUrl;
-          videoElement.src = blobUrl;
-          videoElement.load();
-          if (isActiveRef.current) {
-            videoElement.play().catch((error) => {
-              console.log("Autoplay prevented:", error);
-            });
-          }
-        })
-        .catch((error) => {
-          if (error.name !== "AbortError") {
-            console.error("Error loading video with auth:", error);
-          }
-        });
-
-      return () => {
-        abortController.abort();
-      };
+    if (!blobData) {
+      videoElement.removeAttribute("src");
+      videoElement.load();
+      return;
     }
 
-    // No auth token - use direct URL
-    videoElement.src = video.url;
+    const url = URL.createObjectURL(blobData);
+    blobUrlRef.current = url;
+    videoElement.src = url;
     videoElement.load();
+
     if (isActiveRef.current) {
       videoElement.play().catch((error) => {
         console.log("Autoplay prevented:", error);
       });
     }
-  }, [video, authToken]);
 
-  // Clean up blob URL on unmount
-  useEffect(() => {
-    return () => {
-      if (blobUrlRef.current) {
-        URL.revokeObjectURL(blobUrlRef.current);
-      }
-    };
-  }, []);
+    return () => URL.revokeObjectURL(url);
+  }, [blobData]);
 
   // Handle play/pause based on isActive prop
   useEffect(() => {
@@ -157,7 +119,7 @@ export function VideoPlayer({
   return (
     <div className="relative h-full w-full overflow-hidden">
       <MediaController
-        className="relative w-full h-full md:rounded overflow-hidden"
+        className="relative w-full h-full md:rounded-md overflow-hidden"
         suppressHydrationWarning
         autohide="-1"
       >
@@ -172,20 +134,26 @@ export function VideoPlayer({
           webkit-playsinline="true"
           x-webkit-airplay="allow"
           crossOrigin=""
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover bg-accent/15"
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onClick={togglePlay}
         />
 
-        <MediaControlBar className="px-4 pb-8 gap-4">
+        {isLoading && (
+          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+            <Loader size="xl" className="text-primary" />
+          </div>
+        )}
+
+        <MediaControlBar className="relative z-20 px-4 pb-8 gap-4">
           <MediaTimeRange className="bg-transparent" />
           <MediaMuteButton className="bg-transparent px-2" />
         </MediaControlBar>
       </MediaController>
 
       {/* Video actions - description, like, share, creator */}
-      <VideoActions video={video} isPlaying={isPlaying} />
+      <VideoActions video={video} isPlaying={isPlaying} disabled={isLoading} />
     </div>
   );
 }

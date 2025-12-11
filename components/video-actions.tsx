@@ -16,9 +16,14 @@ import GeometricAvatar from "./geometric-avatar";
 interface VideoActionsProps {
   video: Video;
   isPlaying?: boolean;
+  disabled?: boolean;
 }
 
-export function VideoActions({ video, isPlaying = false }: VideoActionsProps) {
+export function VideoActions({
+  video,
+  isPlaying = false,
+  disabled = false,
+}: VideoActionsProps) {
   const router = useRouter();
   const { account, connected } = useWallet();
   const { openWalletDialog } = useWalletDialog();
@@ -58,7 +63,7 @@ export function VideoActions({ video, isPlaying = false }: VideoActionsProps) {
       <div
         className={cn(
           "absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-200 z-10",
-          isPlaying ? "opacity-0" : "opacity-100"
+          isPlaying || disabled ? "opacity-0" : "opacity-100"
         )}
       >
         <div className="bg-black/40 rounded-full p-4 backdrop-blur-sm">

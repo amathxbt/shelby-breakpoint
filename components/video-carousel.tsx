@@ -9,6 +9,7 @@ import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
 import Loader from "./ui/loader";
 import { VIDEO_PAGE_SIZE } from "@/lib/constants";
 import { generateSeed } from "@/lib/random";
+import { CheckIcon } from "@radix-ui/react-icons";
 
 export interface VideoCarouselProps {
   initialData?: Video[];
@@ -193,28 +194,36 @@ export default function VideoCarousel({
       }}
       plugins={[WheelGesturesPlugin()]}
       orientation="vertical"
-      className="w-full md:max-w-md lg:max-w-lg"
+      className="w-full"
     >
-      <CarouselContent className="pb-12 md:pb-0 h-svh">
+      <CarouselContent className="h-svh w-full pb-12">
         {videos.map((video, index) => (
           <CarouselItem
             key={`${video.fileId}-${index}`}
-            className="md:basis-full md:py-12 h-full"
+            className="md:basis-full md:py-12 h-full md:max-w-md lg:max-w-lg mx-auto w-full"
           >
-            <VideoPlayer
-              video={video}
-              isActive={index === activeIndex}
-              authToken={"AG-9NWLSXCAX4PXFY4FKMPDON5ZLEGPUBNRX"}
-            />
+            <VideoPlayer video={video} isActive={index === activeIndex} />
           </CarouselItem>
         ))}
-        {hasMoreToLoad && (
-          <CarouselItem className="md:py-12 md:basis-full">
-            <div className="flex items-center justify-center h-full bg-card">
+        <CarouselItem className="mb-12 md:basis-full md:py-12 h-full md:max-w-md lg:max-w-lg mx-auto w-full">
+          <div className="flex items-center justify-center h-full bg-accent border border-dashed md:rounded-md font-gt-planar mb-8">
+            {hasMoreToLoad ? (
               <Loader />
-            </div>
-          </CarouselItem>
-        )}
+            ) : (
+              <div className="text-center px-6 flex flex-col items-center justify-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                  <CheckIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-medium">You’re all caught up</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    No more videos to load.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </CarouselItem>
       </CarouselContent>
     </Carousel>
   );
