@@ -1,23 +1,18 @@
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 
-export const getVideoBlobQueryKey = (url?: string, authToken?: string) =>
-  ["video-blob", url, authToken] as const;
+export const getVideoBlobQueryKey = (url?: string) =>
+  ["video-blob", url] as const;
 
 export type UseVideoBlobOptions = Omit<
   UseQueryOptions<Blob, Error>,
   "queryKey" | "queryFn"
 > & {
   url: string;
-  authToken?: string;
 };
 
-export default function useVideoBlob({
-  url,
-  authToken,
-  ...options
-}: UseVideoBlobOptions) {
+export default function useVideoBlob({ url, ...options }: UseVideoBlobOptions) {
   return useQuery({
-    queryKey: getVideoBlobQueryKey(url, authToken),
+    queryKey: getVideoBlobQueryKey(url),
     queryFn: async ({ signal }) => {
       const response = await fetch(url, {
         headers: {

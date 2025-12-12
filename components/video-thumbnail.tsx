@@ -22,7 +22,6 @@ export function VideoThumbnail({
   const isHoveringRef = useRef(false);
   const blobUrlRef = useRef<string | null>(null);
 
-  // Fetch only when hovering and auth is required.
   const { data: blobData, isLoading } = useVideoBlob({ url: src });
 
   useEffect(() => {

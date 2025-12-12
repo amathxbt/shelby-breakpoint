@@ -12,37 +12,6 @@ import { VideoActions } from "@/components/video-actions";
 import Loader from "./ui/loader";
 import useVideoBlob from "@/queries/useVideoBlob";
 
-// Default sample videos - always included
-export const defaultVideos: Video[] = [
-  {
-    id: -1,
-    fileId: "sample-1",
-    account: "",
-    description: "Big Buck Bunny",
-    email: "bigbuckbunny@example.com",
-    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-    createdAt: new Date(),
-  },
-  {
-    id: -2,
-    fileId: "sample-2",
-    account: "",
-    description: "Elephants Dream",
-    email: "elephantsdream@example.com",
-    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-    createdAt: new Date(),
-  },
-  {
-    id: -3,
-    fileId: "sample-3",
-    account: "",
-    description: "For Bigger Blazes",
-    email: "forbiggerblazes@example.com",
-    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    createdAt: new Date(),
-  },
-];
-
 interface VideoPlayerProps {
   video: Video;
   isActive?: boolean;

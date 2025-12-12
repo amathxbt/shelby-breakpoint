@@ -4,7 +4,7 @@ import { Video } from "@/db/schema";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Carousel, CarouselItem, CarouselContent } from "./ui/carousel";
 import { EmblaCarouselType, EngineType } from "embla-carousel";
-import { VideoPlayer, defaultVideos } from "./video-player";
+import { VideoPlayer } from "./video-player";
 import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
 import Loader from "./ui/loader";
 import { VIDEO_PAGE_SIZE } from "@/lib/constants";
@@ -37,7 +37,7 @@ export default function VideoCarousel({
   onLoadMore,
 }: VideoCarouselProps) {
   const [videos, setVideos] = useState<Video[]>(
-    initialData && initialData.length > 0 ? initialData : defaultVideos
+    initialData && initialData.length > 0 ? initialData : []
   );
   const scrollListenerRef = useRef<() => void>(() => undefined);
   const listenForScrollRef = useRef(true);
