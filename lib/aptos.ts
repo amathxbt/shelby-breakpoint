@@ -43,6 +43,7 @@ export const createAptosClient = (
         TRANSACTION_SUBMITTER: new GasStationTransactionSubmitter({
           network,
           apiKey: process.env.NEXT_PUBLIC_APTOS_SHELBYNET_GAS_STATION_API_KEY,
+          baseUrl: "https://api.shelbynet.shelby.xyz/gs/v1",
         }),
       }
     : {};
